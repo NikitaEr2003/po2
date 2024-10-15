@@ -16,10 +16,10 @@ void print() {
        << "\t\t\t" << 1000'0000 << endl
        << endl;
 }
-void counter(vector<int> first, vector<int> second) {
+void counter(vector<int> first, vector<int> second, int start, int end) {
 
   call_once(flag,print);
-  std::transform(first.begin(), first.end(), second.begin(),
+  std::transform(first.begin()+start, first.begin()+end, second.begin()+start,
                  [](int x) { return x + x; });
  
   
@@ -51,8 +51,12 @@ int main()
                       [&distrib, &gen]() { return distrib(gen); });
        
           auto start = chrono::steady_clock::now();
+          int chunk = i / temp;
+          
           for (int h = 0; h < temp; h++) {
-            thr_vec.push_back(thread(counter, vec1, vec2));
+            int start = chunk * h;
+            int end = chunk * (h + 1);
+            thr_vec.push_back(thread(counter, vec1, vec2, start, end));
           }
           auto end = chrono::steady_clock::now();
           chrono::duration<double, milli> time = end - start;
