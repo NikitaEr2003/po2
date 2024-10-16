@@ -16,12 +16,17 @@ void print() {
        << "\t\t\t" << 1000'0000 << endl
        << endl;
 }
-void counter(vector<int> first, vector<int> second, int start, int end) {
-
-  call_once(flag,print);
-  std::transform(first.begin()+start, first.begin()+end, second.begin()+start,
-                 [](int x) { return x + x; });
+void counter(vector<int> first, vector<int> second, vector<int> &third, int start, int end) {
  
+  call_once(flag,print);
+  for (int i = start; i < end; i++) {
+    third[i] = first[i] + second[i];
+  
+  }
+ 
+  
+
+  
   
  
  
@@ -41,7 +46,8 @@ int main()
       for (int i = 1000; i <= 1'000'000; i *= 10) {
         std::vector<int> vec1(i);
         std::vector<int> vec2(i);
-       
+        std::vector<int> third;
+        third.resize(i);
 
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -50,16 +56,17 @@ int main()
         std::generate(vec1.begin(), vec1.end(),
                       [&distrib, &gen]() { return distrib(gen); });
        
-          auto start = chrono::steady_clock::now();
+         
           int chunk = i / temp;
-          
+          auto start_t = chrono::steady_clock::now();
           for (int h = 0; h < temp; h++) {
             int start = chunk * h;
             int end = chunk * (h + 1);
-            thr_vec.push_back(thread(counter, vec1, vec2, start, end));
+            thr_vec.push_back(thread(counter, vec1, vec2,ref(third), start, end));
           }
-          auto end = chrono::steady_clock::now();
-          chrono::duration<double, milli> time = end - start;
+          auto end_t = chrono::steady_clock::now();
+          chrono::duration<double, milli> time;
+          time = end_t - start_t;
           for (auto& t : thr_vec) {
             if (t.joinable()) {
               t.join();
@@ -71,8 +78,8 @@ int main()
         if (index == 1) {
           cout << "Количество потоков: " << index * temp;
         }
+      
         cout << "\t\t" << time.count() << "milsec";
-
         index *= 2;
       }
       temp *= 2;
